@@ -34,25 +34,6 @@
       height: 100vh;
       border: none;
     }
-
-    /* Tombol refresh manual */
-    .refresh-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: rgba(255, 255, 255, 0.8);
-      color: #000;
-      border: none;
-      padding: 10px 15px;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
-      z-index: 1000;
-    }
-
-    .refresh-btn:hover {
-      background-color: rgba(255, 255, 255, 1);
-    }
   </style>
 </head>
 
@@ -61,9 +42,6 @@
   <!-- Iframe dengan izin clipboard -->
   <iframe id="iframe" allow="clipboard-read; clipboard-write" allowfullscreen></iframe>
 
-  <!-- Tombol Refresh Manual -->
-  <button class="refresh-btn" onclick="reloadIframe()">🔄 Refresh</button>
-
   <script>
     // Mengatur URL iframe dari base64 untuk keamanan
     window.onload = function () {
@@ -71,38 +49,22 @@
       document.getElementById('iframe').src = iframeUrl;
     };
 
-    // Fungsi untuk merefresh iframe tanpa reload seluruh halaman
+    // Fungsi untuk merefresh iframe
     function reloadIframe() {
       let iframe = document.getElementById('iframe');
       iframe.src = iframe.src; // Menyetel ulang sumber untuk refresh iframe
     }
 
-    // Mencegah pull-to-refresh di Android
-    let touchStartY = 0, touchEndY = 0;
-    document.addEventListener('touchstart', function (event) {
-      touchStartY = event.touches[0].clientY;
-    });
+    // 🔄 Auto-refresh saat scroll ke bawah di Android
+    let lastScrollTop = 0;
+    window.addEventListener("scroll", function () {
+      let currentScroll = window.scrollY || document.documentElement.scrollTop;
 
-    document.addEventListener('touchmove', function (event) {
-      touchEndY = event.touches[0].clientY;
-
-      // Cegah refresh jika swipe ke bawah dari atas halaman
-      if (window.scrollY === 0 && touchEndY > touchStartY) {
-        event.preventDefault();
-      }
-    }, { passive: false });
-
-    // Double-tap untuk refresh iframe
-    let lastTap = 0;
-    document.addEventListener('touchend', function (event) {
-      let currentTime = new Date().getTime();
-      let tapLength = currentTime - lastTap;
-
-      if (tapLength < 300 && tapLength > 0) {
-        reloadIframe(); // Refresh iframe jika double-tap
+      if (currentScroll > lastScrollTop) {
+        reloadIframe(); // Refresh iframe jika scroll ke bawah
       }
 
-      lastTap = currentTime;
+      lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
     });
 
     // Mencegah inspeksi elemen & klik kanan
@@ -121,6 +83,7 @@
         event.preventDefault();
       }
     });
+
   </script>
 
 </body>
