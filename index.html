@@ -58,8 +58,8 @@
 
 <body>
 
-  <!-- Iframe dengan izin copy & clipboard -->
-  <iframe id="iframe" sandbox="allow-scripts allow-same-origin allow-modals allow-forms" allowfullscreen></iframe>
+  <!-- Iframe dengan izin clipboard -->
+  <iframe id="iframe" allow="clipboard-read; clipboard-write" allowfullscreen></iframe>
 
   <!-- Tombol Refresh Manual -->
   <button class="refresh-btn" onclick="reloadIframe()">🔄 Refresh</button>
