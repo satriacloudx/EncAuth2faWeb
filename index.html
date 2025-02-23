@@ -20,13 +20,21 @@
   <title>Two-Factor Authentication - Google Authenticator</title>
 
   <style>
+    /* Memungkinkan scroll */
     body, html {
       margin: 0;
       padding: 0;
       font-family: Arial, sans-serif;
       background-color: #000;
       height: 100%;
-      overflow: hidden;
+      overflow-y: auto; /* Perbaikan: Bisa di-scroll */
+    }
+
+    /* Pastikan iframe penuh, tetapi tetap bisa discroll di luar iframe */
+    #iframe-container {
+      width: 100%;
+      height: 100vh;
+      overflow-y: auto; /* Bisa scroll di luar iframe */
     }
 
     iframe {
@@ -39,8 +47,10 @@
 
 <body>
 
-  <!-- Iframe dengan izin clipboard -->
-  <iframe id="iframe" allow="clipboard-read; clipboard-write" allowfullscreen></iframe>
+  <!-- Container agar halaman tetap bisa scroll -->
+  <div id="iframe-container">
+    <iframe id="iframe" allow="clipboard-read; clipboard-write" allowfullscreen></iframe>
+  </div>
 
   <script>
     // Mengatur URL iframe dari base64 untuk keamanan
@@ -49,22 +59,22 @@
       document.getElementById('iframe').src = iframeUrl;
     };
 
-    // Fungsi untuk merefresh iframe
+    // Fungsi untuk refresh iframe
     function reloadIframe() {
       let iframe = document.getElementById('iframe');
-      iframe.src = iframe.src; // Menyetel ulang sumber untuk refresh iframe
+      iframe.src = iframe.src; // Refresh iframe
     }
 
-    // 🔄 Auto-refresh saat scroll ke bawah di Android
+    // 🔄 Auto-refresh saat scroll ke bawah
     let lastScrollTop = 0;
-    window.addEventListener("scroll", function () {
-      let currentScroll = window.scrollY || document.documentElement.scrollTop;
+    document.getElementById('iframe-container').addEventListener("scroll", function () {
+      let currentScroll = this.scrollTop;
 
       if (currentScroll > lastScrollTop) {
         reloadIframe(); // Refresh iframe jika scroll ke bawah
       }
 
-      lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+      lastScrollTop = currentScroll;
     });
 
     // Mencegah inspeksi elemen & klik kanan
